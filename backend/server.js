@@ -7,6 +7,7 @@ const mongoose = require('mongoose');
 const flash = require('connect-flash');
 const app = express();
 const cookieParser = require('cookie-parser');
+const cors = require('cors');
 
 // Подключение к БД
 require('./config/db')();
@@ -17,20 +18,22 @@ app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
+app.use(cors({ credentials: true, origin: 'http://localhost:3000' }));
 
-// Сессии
+// Настройка сессии с хранилищем в MongoDB
 app.use(session({
-  secret: process.env.SESSION_SECRET,
+  secret: process.env.SESSION_SECRET, // Секрет из .env
   resave: false,
   saveUninitialized: false,
-  store: MongoStore.create({ 
-    mongoUrl: process.env.MONGO_URI,
-    ttl: 24 * 60 * 60
+  store: MongoStore.create({
+    mongoUrl: process.env.MONGO_URI, // Строка подключения из .env
+    collectionName: 'sessions', // Название коллекции для сессий
+    ttl: 24 * 60 * 60 // Время жизни сессии (1 день)
   }),
-  cookie: { 
-    maxAge: 1000 * 60 * 60 * 24,
+  cookie: {
+    maxAge: 24 * 60 * 60 * 1000, // 1 день
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production'
+    secure: process.env.NODE_ENV === 'production' // В продакшене только HTTPS
   }
 }));
 
@@ -43,7 +46,7 @@ initializePassport(passport);
 
 // Passport middleware (ВАЖНО: после сессии!)
 app.use(passport.initialize());
-app.use(passport.session());
+app.use(passport.session()); // Добавьте эту строку для работы сессий
 
 // Переменные для шаблонов (после Passport)
 app.use((req, res, next) => {
