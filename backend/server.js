@@ -37,6 +37,13 @@ app.use(session({
   }
 }));
 
+console.log('===== Environment Variables =====');
+console.log('NODE_ENV:', process.env.NODE_ENV || 'development');
+console.log('PORT:', process.env.PORT || 3000);
+console.log('MONGO_URI:', process.env.MONGO_URI ? '***' : 'not defined!');
+console.log('SESSION_SECRET:', process.env.SESSION_SECRET ? '***' : 'not defined!');
+console.log('================================');
+
 // Flash сообщения
 app.use(flash());
 
